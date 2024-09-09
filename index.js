@@ -20,12 +20,50 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    const employeeCollection = client.db("sayem").collection("employees");
     const formCollection = client.db("sayem").collection("form");
+
+    // Employee CRUD Operations
+
+    // 1. GET all employees (READ)
+    app.get("/employees", async (req, res) => {
+      const employees = await employeeCollection.find().toArray();
+      res.send(employees);
+    });
+
+    // 2. POST new employee (CREATE)
+    app.post("/employees", async (req, res) => {
+      const employee = req.body;
+      const result = await employeeCollection.insertOne(employee);
+      res.status(201).send(result);
+    });
+
+    // 3. PUT update existing employee by ID (UPDATE)
+    app.put("/employees/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedEmployee = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: updatedEmployee,
+      };
+      const result = await employeeCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // 4. DELETE employee by ID (DELETE)
+    app.delete("/employees/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await employeeCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // Form Handling
 
     // 1. GET all form entries (READ)
     app.get("/form", async (req, res) => {
-      const result = await formCollection.find().toArray();
-      res.send(result);
+      const forms = await formCollection.find().toArray();
+      res.send(forms);
     });
 
     // 2. POST new form entry (CREATE)
@@ -33,26 +71,6 @@ async function run() {
       const formData = req.body;
       const result = await formCollection.insertOne(formData);
       res.status(201).send(result);
-    });
-
-    // 3. PUT update existing form entry by ID (UPDATE)
-    app.put("/form/:id", async (req, res) => {
-      const id = req.params.id;
-      const updatedData = req.body;
-      const query = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: updatedData,
-      };
-      const result = await formCollection.updateOne(query, updateDoc);
-      res.send(result);
-    });
-
-    // 4. DELETE form entry by ID (DELETE)
-    app.delete("/form/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await formCollection.deleteOne(query);
-      res.send(result);
     });
 
   } finally {
@@ -63,7 +81,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("STM server is running");
+  res.send("Server is running");
 });
 
 app.listen(port, () => {
