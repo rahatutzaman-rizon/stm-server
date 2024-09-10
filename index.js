@@ -40,7 +40,7 @@ const transporter = nodemailer.createTransport({
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const employeeCollection = client.db("sayem").collection("employees");
     const formCollection = client.db("sayem").collection("form");
